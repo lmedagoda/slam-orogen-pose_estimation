@@ -19,6 +19,9 @@ task_context "BaseTask" do
 
     property( "initial_state", "/base/samples/RigidBodyState" ).
         doc("the initial state, NaN values will be ignored.")
+
+    property( "process_noise", "/pose_estimation/ProcessNoise" ).
+        doc("Filter process noise, NaN values will be ignored and set to a healthy but likely overconfident value.")
     
     
     property( 'target_frame', '/std/string', 'world' ).
@@ -52,6 +55,10 @@ task_context "UWPoseEstimator" do
     #******************************
     #******* Input Ports **********
     #******************************
+    input_port( "acceleration_samples", "/base/samples/RigidBodyAcceleration" ).
+        needs_reliable_connection.
+        doc "acceleration samples with uncertainty from an IMU, in case this port is connected the measurement uncertainty is used instead of the process noise."
+
     input_port( "orientation_samples", "/base/samples/RigidBodyState" ).
 	needs_reliable_connection.
 	doc "orientation samples from an IMU and or a FOG, containing the orientation and the angular velocity."
@@ -95,6 +102,7 @@ task_context "UWPoseEstimator" do
         transformation("lbl", "body")
         transformation("gps", "body")
         
+        align_port("acceleration_samples", 0.01)
 	align_port("orientation_samples", 0.01)
 	align_port("depth_samples", 0.01)
 	align_port("dvl_velocity_samples", 0.01)
